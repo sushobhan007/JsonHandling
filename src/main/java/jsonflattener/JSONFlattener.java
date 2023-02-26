@@ -187,7 +187,7 @@ public class JSONFlattener {
                     }
                 }
                 collection.insertOne(doc);
-                return;
+//                return;
             }
             Iterator<?> it = jsonObject.keys();
             while (it.hasNext()) {
@@ -199,7 +199,7 @@ public class JSONFlattener {
                     doc.put(key, value);
                 }
             }
-            collection.insertOne(doc);
+//            collection.insertOne(doc);
         } else if (data instanceof JSONArray) {
             JSONArray jsonArray = (JSONArray) data;
             for (int i = 0; i < jsonArray.length(); i++) {
