@@ -5,15 +5,53 @@ import org.apache.activemq.artemis.utils.json.JSONArray;
 import org.apache.activemq.artemis.utils.json.JSONException;
 import org.apache.activemq.artemis.utils.json.JSONObject;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class TraverseJSON {
 
     public static void main(String[] args) throws JSONException {
         JSONObject jsonObject = makeJSON();
 //        System.out.println(jsonObject);
-        String path = "Ingredients.Grocery.Salt";
+        String path = "Ingredients.Fruits.Papaya.Papaya";
         JSONArray children = jsonObject.getJSONArray("children");
-        JSONArray response = traverseJSON(children, path);
-        System.out.println(response);
+        traverseJSONV2(children, path);
+//        JSONArray response = traverseJSON(children, path);
+//        System.out.println(response);
+    }
+
+    static JSONArray traverseJSONV2(JSONArray children, String path) throws JSONException {
+        JSONArray traversedArray = new JSONArray();
+        String[] split = path.split("\\.");
+//        System.out.println(Arrays.toString(split));
+        List<String> list = Arrays.asList(split);
+//        System.out.println(list);
+        for (String listItem : list) {
+            for (int i = 0; i < children.length(); i++) {
+                Object values = children.get(i);
+                if (values instanceof JSONObject) {
+                    JSONObject jsonObject = (JSONObject) values;
+                    if (jsonObject.get("name").equals(listItem)) {
+                        if (jsonObject.has("children")) {
+                            list.remove(listItem);
+                            String s = list.toString();
+                            traverseJSONV2(jsonObject.getJSONArray("children"), s);
+                        }
+                        else {
+                            traversedArray.put(jsonObject);
+                        }
+                    }
+                    else if(jsonObject.has("children")) {
+                        JSONArray children1 = jsonObject.getJSONArray("children");
+                        JSONArray childObject = traverseJSONV2(children1, path);
+                        if (childObject.length() > 0) {
+                            traversedArray.put(childObject);
+                        }
+                    }
+                }
+            }
+        }
+        return traversedArray;
     }
 
     static JSONArray traverseJSON(JSONArray children, String path) throws JSONException {
@@ -56,9 +94,16 @@ public class TraverseJSON {
         orange.put("quantity", "4 pcs");
         orange.put("price", "60");
         JSONObject papaya = new JSONObject();
+        JSONArray papayaChild = new JSONArray();
+        JSONObject papayaChildObject = new JSONObject();
         papaya.put("name", "Papaya");
         papaya.put("quantity", "2 pcs");
         papaya.put("price", "120");
+        papayaChildObject.put("name", "Papaya");
+        papayaChildObject.put("size", "Big");
+        papayaChildObject.put("price", "60");
+        papayaChild.put(papayaChildObject);
+        papaya.put("children", papayaChild);
         JSONObject mango = new JSONObject();
         mango.put("name", "Mango");
         mango.put("quantity", "10 pcs");
