@@ -15,9 +15,9 @@ public class TraverseJSON {
 //        System.out.println(jsonObject);
         String path = "Ingredients.Fruits.Papaya.Papaya";
         JSONArray children = jsonObject.getJSONArray("children");
-        traverseJSONV2(children, path);
-//        JSONArray response = traverseJSON(children, path);
-//        System.out.println(response);
+//        traverseJSONV3(children, path);
+        JSONArray response = traverseJSONV3(children, path);
+        System.out.println(response);
     }
 
     static JSONArray traverseJSONV2(JSONArray children, String path) throws JSONException {
@@ -36,12 +36,10 @@ public class TraverseJSON {
                             list.remove(listItem);
                             String s = list.toString();
                             traverseJSONV2(jsonObject.getJSONArray("children"), s);
-                        }
-                        else {
+                        } else {
                             traversedArray.put(jsonObject);
                         }
-                    }
-                    else if(jsonObject.has("children")) {
+                    } else if (jsonObject.has("children")) {
                         JSONArray children1 = jsonObject.getJSONArray("children");
                         JSONArray childObject = traverseJSONV2(children1, path);
                         if (childObject.length() > 0) {
@@ -56,8 +54,7 @@ public class TraverseJSON {
 
     static JSONArray traverseJSON(JSONArray children, String path) throws JSONException {
         JSONArray traversedArray = new JSONArray();
-        int i1 = path.lastIndexOf(".");
-        String substring = path.substring(i1 + 1);
+        String substring = getSubString(path);
         for (int i = 0; i < children.length(); i++) {
             Object values = children.get(i);
             if (values instanceof JSONObject) {
@@ -81,6 +78,39 @@ public class TraverseJSON {
 //            return null;
 //        }
         return traversedArray;
+    }
+
+    static JSONArray traverseJSONV3(JSONArray children, String path) throws JSONException {
+        JSONArray traversedArray = new JSONArray();
+        String substring = getSubString(path);
+        for (int i = 0; i < children.length(); i++) {
+            Object values = children.get(i);
+            if (values instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject) values;
+                if (jsonObject.get("name").equals(substring)) {
+                    if (jsonObject.has("children")) {
+                        JSONArray childArray = traverseJSONV3(jsonObject.getJSONArray("children"), path);
+                        for (int j = 0; j < childArray.length(); j++) {
+                            traversedArray.put(childArray.get(j));
+                        }
+                    } else {
+                        traversedArray.put(jsonObject);
+                    }
+                } else if (jsonObject.has("children")) {
+                    JSONArray childArray = traverseJSONV3(jsonObject.getJSONArray("children"), path);
+                    if (childArray.length() > 0) {
+                        traversedArray.put(childArray);
+                    }
+                }
+            }
+        }
+        return traversedArray;
+    }
+
+    private static String getSubString(String path) {
+        int i1 = path.lastIndexOf(".");
+        String substring = path.substring(i1 + 1);
+        return substring;
     }
 
     static JSONObject makeJSON() throws JSONException {
